@@ -1,9 +1,26 @@
 # 绑定ipv6前缀下的任意地址
-参考这这个[回答](https://serverfault.com/questions/590038/adding-a-whole-ipv6-64-block-to-an-network-interface-on-debian)
+参考这这个[回答](https://serverfault.com/questions/590038/adding-a-whole-ipv6-64-block-to-an-network-interface-on-debian)，以及[这个](https://linux.do/t/topic/202151)
 
-把前缀加到lo上，然后把lo上前缀的路由给加一下，开启ip_nonlocal_bind，万事大吉。
+分为两类情况，如果有单独分配给服务器的路由前缀，则：
 ```sh
-sudo ip addr add 2001:41d0:2:ad64::/64 dev lo
-sudo ip route add local 2001:41d0:2:ad64::/64 dev eth0
+sudo ip route add local 2001:41d0:2::/48 dev lo
 sudo sysctl -w net.ipv6.ip_nonlocal_bind=1
+```
+
+如果没有分配路由前缀，但服务器可以使用前缀里的任意地址，则
+```sh
+sudo sysctl -w net.ipv6.ip_nonlocal_bind=1
+ip route add local 2406:8dc0:6008:dddd::/64 dev eth0
+```
+此外，再安装ndppd,编辑/etc/ndppd.conf
+
+```conf
+proxy eth0 {
+    router no
+    timeout 500
+    ttl 30000
+    rule 2406:8dc0:6008:dddd::/64 {
+        static
+    }
+}
 ```
