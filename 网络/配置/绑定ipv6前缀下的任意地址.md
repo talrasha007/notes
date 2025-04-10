@@ -15,6 +15,8 @@ ip route add local 2406:8dc0:6008:dddd::/64 dev eth0
 此外，再安装ndppd,编辑/etc/ndppd.conf
 
 ```conf
+route-ttl 30000
+
 proxy eth0 {
     router no
     timeout 500
